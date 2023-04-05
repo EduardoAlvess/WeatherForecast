@@ -1,33 +1,47 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Newtonsoft.Json;
+using WeatherForecast.Models;
+using WeatherForecast.Services;
+using static System.Net.WebRequestMethods;
 
 namespace WeatherForecast.Controllers
 {
-    [ApiController]
+    //[ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly HttpClient _httpClient;
+        private readonly CEPService _CEPservice;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, HttpClient httpClient, CEPService CEPService)
         {
             _logger = logger;
+            _httpClient = httpClient;
+            _CEPservice = CEPService;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        [HttpPost]
+        [Route("/GetWeatherForecast/{cep}")]
+        public string GetWeatherForecast(string cep)
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+            if (!_CEPservice.isValidCep(cep))
+                return String.Empty;
+
+            var cepInfosRoute = $"https://viacep.com.br/ws/{cep}/json/";
+            var result = _httpClient.GetAsync(cepInfosRoute).Result;
+            var cepInfos = result.Content.ReadAsStringAsync().Result;
+            var city = JsonConvert.DeserializeObject<LocationInfos>(cepInfos).Localidade;
+
+            var cityId = _CEPservice.searchCityId(city);
+            var weatherForecastRoute = $"http://servicos.cptec.inpe.br/XML/cidade/{cityId}/previsao.xml";
+            var aresult = _httpClient.GetAsync(weatherForecastRoute).Result;
+            var weatherForecast = aresult.Content.ReadAsStringAsync().Result;
+
+            return weatherForecast;
         }
+
+
     }
 }
