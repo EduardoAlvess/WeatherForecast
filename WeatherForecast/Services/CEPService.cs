@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System.Globalization;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Serialization;
 using WeatherForecast.Models;
 
@@ -17,7 +18,7 @@ namespace WeatherForecast.Services
             _httpClient = httpClient;
         }
 
-        public bool isValidCep(string cep)
+        public bool IsValidCep(string cep)
         {
             const string PATTERN = "^[0-9]{8}$";
 
@@ -27,7 +28,7 @@ namespace WeatherForecast.Services
             return false;
         }
 
-        public int searchCityId(string cityName)
+        public int SearchCityId(string cityName)
         {
             var normalizedName = NormalizeCityName(cityName);
 
@@ -40,6 +41,24 @@ namespace WeatherForecast.Services
             var deserializedCityInfos = DeserializeCityInfos(citiesInfos);
 
             return deserializedCityInfos.City.ID;
+        }
+
+        public string ConvertXmlToJson(string xml)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+
+            return JsonConvert.SerializeXmlNode(doc);
+        }
+
+        public string MergeJson(string json1, string json2)
+        {
+            JObject obj1 = JObject.Parse(json1);
+            JObject obj2 = JObject.Parse(json2);
+
+            obj1.Merge(obj2);
+
+            return obj1.ToString();
         }
 
         private string NormalizeCityName(string cityName)

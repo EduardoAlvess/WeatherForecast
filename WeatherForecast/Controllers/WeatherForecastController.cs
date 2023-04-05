@@ -1,13 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Newtonsoft.Json;
-using WeatherForecast.Models;
+using Newtonsoft.Json.Linq;
 using WeatherForecast.Services;
-using static System.Net.WebRequestMethods;
 
 namespace WeatherForecast.Controllers
 {
-    //[ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
@@ -26,20 +22,27 @@ namespace WeatherForecast.Controllers
         [Route("/GetWeatherForecast/{cep}")]
         public string GetWeatherForecast(string cep)
         {
-            if (!_CEPservice.isValidCep(cep))
+            if (!_CEPservice.IsValidCep(cep))
                 return String.Empty;
 
-            var cepInfosRoute = $"https://viacep.com.br/ws/{cep}/json/";
-            var result = _httpClient.GetAsync(cepInfosRoute).Result;
-            var cepInfos = result.Content.ReadAsStringAsync().Result;
-            var city = JsonConvert.DeserializeObject<LocationInfos>(cepInfos).Localidade;
+            var locationInfosResult = _httpClient.GetAsync($"https://viacep.com.br/ws/{cep}/json/").Result;
+            var locationInfosJsonString = locationInfosResult.Content.ReadAsStringAsync().Result;
 
-            var cityId = _CEPservice.searchCityId(city);
-            var weatherForecastRoute = $"http://servicos.cptec.inpe.br/XML/cidade/{cityId}/previsao.xml";
-            var aresult = _httpClient.GetAsync(weatherForecastRoute).Result;
-            var weatherForecast = aresult.Content.ReadAsStringAsync().Result;
+            JObject locationInfosJson = JObject.Parse(locationInfosJsonString);
+            var cityName = (string)locationInfosJson["localidade"];
 
-            return weatherForecast;
+            if (cityName == null)
+                return String.Empty;
+
+            var cityId = _CEPservice.SearchCityId(cityName);
+            var weatherForecastResult = _httpClient.GetAsync($"http://servicos.cptec.inpe.br/XML/cidade/{cityId}/previsao.xml").Result;
+            var weatherForecastXml = weatherForecastResult.Content.ReadAsStringAsync().Result;
+
+            string weatherForecastJson = _CEPservice.ConvertXmlToJson(weatherForecastXml);
+
+            string resultJson = _CEPservice.MergeJson(locationInfosJsonString, weatherForecastJson);
+
+            return resultJson;
         }
 
 
