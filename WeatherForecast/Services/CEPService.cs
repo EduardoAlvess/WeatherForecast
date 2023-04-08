@@ -12,10 +12,12 @@ namespace WeatherForecast.Services
     public class CEPService
     {
         private readonly HttpClient _httpClient;
+        private readonly ElasticService _elasticService;
 
-        public CEPService(HttpClient httpClient)
+        public CEPService(HttpClient httpClient, ElasticService elasticService)
         {
             _httpClient = httpClient;
+            _elasticService = elasticService;
         }
 
         public bool IsValidCep(string cep)
@@ -37,6 +39,7 @@ namespace WeatherForecast.Services
             var result = _httpClient.GetAsync(route).Result;
 
             var citiesInfos = result.Content.ReadAsStringAsync().Result;
+            _elasticService.WriteLog(citiesInfos);
 
             var deserializedCityInfos = DeserializeCityInfos(citiesInfos);
 

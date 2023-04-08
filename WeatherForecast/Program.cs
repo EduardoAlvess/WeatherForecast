@@ -11,6 +11,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
 builder.Services.AddTransient<CEPService>();
+builder.Services.AddTransient<ElasticService>();
 
 var app = builder.Build();
 
