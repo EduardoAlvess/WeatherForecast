@@ -1,3 +1,6 @@
+using Elastic.Apm.Api;
+using Microsoft.AspNetCore.Authentication;
+using WeatherForecast.Authentication;
 using WeatherForecast.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +14,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
 builder.Services.AddTransient<CEPService>();
-builder.Services.AddTransient<ElasticService>();
+builder.Services.AddSingleton<ElasticService>();
+builder.Services.AddSingleton<DbService>();
+
+builder.Services.AddAuthentication("BasicAuthentication")
+                .AddScheme<AuthenticationSchemeOptions, BasicAuthentication>("BasicAuthentication", null);
 
 var app = builder.Build();
 
@@ -25,6 +32,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllers();
 

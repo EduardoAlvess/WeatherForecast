@@ -1,8 +1,12 @@
-﻿namespace WeatherForecast.Models
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace WeatherForecast.Models
 {
     public class User
     {
-        public int Id { get; set; }
+        [BsonId]
+        public ObjectId Id { get; set; }
         public string Name { get; set; }
         public string Password { get; set; }
     }

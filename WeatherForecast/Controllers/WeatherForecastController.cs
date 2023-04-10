@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using WeatherForecast.Models;
@@ -5,23 +6,23 @@ using WeatherForecast.Services;
 
 namespace WeatherForecast.Controllers
 {
+    [Authorize(AuthenticationSchemes = "BasicAuthentication")]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private readonly ILogger<WeatherForecastController> _logger;
         private readonly HttpClient _httpClient;
         private readonly CEPService _CEPservice;
         private readonly ElasticService _elasticService;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, HttpClient httpClient, CEPService CEPService, ElasticService elasticService)
+        public WeatherForecastController(HttpClient httpClient, CEPService CEPService, ElasticService elasticService)
         {
-            _logger = logger;
             _httpClient = httpClient;
             _CEPservice = CEPService;
             _elasticService = elasticService;
         }
 
         [HttpPost]
+        [Authorize]
         [Route("/GetWeatherForecast/{cep}")]
         public string GetWeatherForecast(string cep)
         {
@@ -50,11 +51,5 @@ namespace WeatherForecast.Controllers
             return resultJson;
         }
 
-        [HttpGet]
-        [Route("/GetUserLogs")]
-        public List<Log> GetUserLogs()
-        {
-            return _elasticService.GetUserLogs();
-        }
     }
 }
