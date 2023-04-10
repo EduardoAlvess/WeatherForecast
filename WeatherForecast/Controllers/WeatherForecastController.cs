@@ -13,12 +13,14 @@ namespace WeatherForecast.Controllers
         private readonly HttpClient _httpClient;
         private readonly CEPService _CEPservice;
         private readonly ElasticService _elasticService;
+        private readonly SerializeService _serializeService;
 
-        public WeatherForecastController(HttpClient httpClient, CEPService CEPService, ElasticService elasticService)
+        public WeatherForecastController(HttpClient httpClient, CEPService CEPService, ElasticService elasticService, SerializeService serializeService)
         {
             _httpClient = httpClient;
             _CEPservice = CEPService;
             _elasticService = elasticService;
+            _serializeService = serializeService;
         }
 
         [HttpPost]
@@ -44,9 +46,9 @@ namespace WeatherForecast.Controllers
             var weatherForecastXml = weatherForecastResult.Content.ReadAsStringAsync().Result;
             _elasticService.WriteLog(weatherForecastXml);
 
-            string weatherForecastJson = _CEPservice.ConvertXmlToJson(weatherForecastXml);
+            string weatherForecastJson = _serializeService.ConvertXmlToJson(weatherForecastXml);
 
-            string resultJson = _CEPservice.MergeJson(locationInfosJsonString, weatherForecastJson);
+            string resultJson = _serializeService.MergeJson(locationInfosJsonString, weatherForecastJson);
 
             return resultJson;
         }

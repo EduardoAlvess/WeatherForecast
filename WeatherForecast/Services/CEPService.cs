@@ -13,11 +13,13 @@ namespace WeatherForecast.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ElasticService _elasticService;
+        private readonly SerializeService _serializeService;
 
-        public CEPService(HttpClient httpClient, ElasticService elasticService)
+        public CEPService(HttpClient httpClient, ElasticService elasticService, SerializeService serializeService)
         {
             _httpClient = httpClient;
             _elasticService = elasticService;
+            _serializeService = serializeService;
         }
 
         public bool IsValidCep(string cep)
@@ -41,27 +43,9 @@ namespace WeatherForecast.Services
             var citiesInfos = result.Content.ReadAsStringAsync().Result;
             _elasticService.WriteLog(citiesInfos);
 
-            var deserializedCityInfos = DeserializeCityInfos(citiesInfos);
+            var deserializedCityInfos = _serializeService.DeserializeCityInfos(citiesInfos);
 
             return deserializedCityInfos.City.ID;
-        }
-
-        public string ConvertXmlToJson(string xml)
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(xml);
-
-            return JsonConvert.SerializeXmlNode(doc);
-        }
-
-        public string MergeJson(string json1, string json2)
-        {
-            JObject obj1 = JObject.Parse(json1);
-            JObject obj2 = JObject.Parse(json2);
-
-            obj1.Merge(obj2);
-
-            return obj1.ToString();
         }
 
         private string NormalizeCityName(string cityName)
@@ -77,16 +61,6 @@ namespace WeatherForecast.Services
             }
 
             return normalizedName.ToString().ToLower();
-        }
-
-        private Cidades DeserializeCityInfos(string content)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(Cidades));
-
-            using (TextReader reader = new StringReader(content))
-            {
-                return (Cidades)serializer.Deserialize(reader);
-            }
         }
     }
 }

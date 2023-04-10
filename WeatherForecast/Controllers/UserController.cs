@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WeatherForecast.Services;
 using WeatherForecast.Models;
-using System.Security.Cryptography;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
 
 namespace WeatherForecast.Controllers
 {
@@ -12,19 +10,22 @@ namespace WeatherForecast.Controllers
     public class UserController : Controller
     {
         private readonly DbService _mongoService;
+        private readonly HashService _hashService;
         private readonly ElasticService _elasticService;
 
-        public UserController(DbService mongoService, ElasticService elasticService)
+        public UserController(DbService mongoService, ElasticService elasticService, HashService hashService)
         {
             _mongoService = mongoService;
             _elasticService = elasticService;
+            _hashService = hashService;
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Route("Create/{username}/{password}")]
         public void Create(string username, string password)
         {
-            var hashedPassword = HashPassword(password);
+            var hashedPassword = _hashService.HashPassword(password);
 
             var user = new User
             {
@@ -42,20 +43,6 @@ namespace WeatherForecast.Controllers
         public List<Log> GetUserLogs()
         {
             return _elasticService.GetUserLogs();
-        }
-
-        private string HashPassword(string password)
-        {
-            using (var md5Hash = MD5.Create())
-            {
-                var sourceBytes = Encoding.UTF8.GetBytes(password);
-
-                var hashBytes = md5Hash.ComputeHash(sourceBytes);
-
-                var hash = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
-
-                return hash;
-            }
         }
     }
 }
