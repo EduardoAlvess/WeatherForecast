@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
 using WeatherForecast.Services;
@@ -12,16 +13,19 @@ namespace WeatherForecast.Authentication
     {
         private readonly DbService _db;
         private readonly HashService _hashService;
+        private readonly IMemoryCache _cache;
 
         public BasicAuthentication(IOptionsMonitor<AuthenticationSchemeOptions> options
                                   , HashService hashService
                                   , ILoggerFactory logger
+                                  , IMemoryCache cache
                                   , UrlEncoder encoder
                                   , ISystemClock clock
                                   , DbService db)
             : base(options, logger, encoder, clock)
         {
             _db = db;
+            _cache = cache;
             _hashService = hashService;
         }
 
@@ -49,12 +53,19 @@ namespace WeatherForecast.Authentication
                 var principal = new ClaimsPrincipal(identity);
                 var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
+                await CreateCache(username);
+
                 return AuthenticateResult.Success(ticket);
             }
             catch (Exception ex)
             {
                 return AuthenticateResult.Fail("Error while decoding username and password");
             }
+        }
+
+        private async Task CreateCache(string userName)
+        {
+            _cache.Set("userName", userName, TimeSpan.FromMinutes(10));
         }
     }
 }
