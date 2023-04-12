@@ -36,14 +36,6 @@ namespace WeatherForecast.Services
 
         public List<Log> GetUserLogs()
         {
-            //_client.DeleteByQuery<Log>(q => q
-            //        .Query(rq => rq
-            //        .Term(f => f.UserId, "1")
-            //        )
-            //        );
-
-            //return new List<Log>();
-
             var name = _cache.Get("userName").ToString();
 
             var userId = _db.GetUserByName(name).Id.ToString();
