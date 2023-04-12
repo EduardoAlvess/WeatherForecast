@@ -14,11 +14,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 
-builder.Services.AddTransient<CEPService>();
-builder.Services.AddSingleton<ElasticService>();
-builder.Services.AddSingleton<DbService>();
-builder.Services.AddSingleton<HashService>();
-builder.Services.AddSingleton<SerializeService>();
+builder.Services.AddScoped<SerializeService>();
+builder.Services.AddScoped<ElasticService>();
+builder.Services.AddScoped<HashService>();
+builder.Services.AddScoped<CEPService>();
+builder.Services.AddScoped<DbService>();
 
 builder.Services.AddAuthentication("BasicAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthentication>("BasicAuthentication", null);
