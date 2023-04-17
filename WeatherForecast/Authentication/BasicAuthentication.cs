@@ -11,7 +11,7 @@ namespace WeatherForecast.Authentication
 {
     public class BasicAuthentication : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly DbService _db;
+        private readonly IDbService _db;
         private readonly HashService _hashService;
         private readonly IMemoryCache _cache;
 
@@ -21,7 +21,7 @@ namespace WeatherForecast.Authentication
                                   , IMemoryCache cache
                                   , UrlEncoder encoder
                                   , ISystemClock clock
-                                  , DbService db)
+                                  , IDbService db)
             : base(options, logger, encoder, clock)
         {
             _db = db;

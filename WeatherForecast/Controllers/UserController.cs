@@ -9,14 +9,14 @@ namespace WeatherForecast.Controllers
     [Route("[controller]")]
     public class UserController : Controller
     {
-        private readonly DbService _mongoService;
+        private readonly IDbService _db;
         private readonly HashService _hashService;
-        private readonly ElasticService _elasticService;
+        private readonly ILogService _logger;
 
-        public UserController(DbService mongoService, ElasticService elasticService, HashService hashService)
+        public UserController(IDbService db, ILogService logService, HashService hashService)
         {
-            _mongoService = mongoService;
-            _elasticService = elasticService;
+            _db = db;
+            _logger = logService;
             _hashService = hashService;
         }
 
@@ -33,7 +33,7 @@ namespace WeatherForecast.Controllers
                 Password = hashedPassword
             };
 
-            _mongoService.CreateUser(user);
+            _db.CreateUser(user);
         }
 
 
@@ -42,7 +42,7 @@ namespace WeatherForecast.Controllers
         [Route("GetUserLogs")]
         public List<Log> GetUserLogs()
         {
-            return _elasticService.GetUserLogs();
+            return _logger.GetUserLogs();
         }
     }
 }

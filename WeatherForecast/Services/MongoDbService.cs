@@ -3,11 +3,11 @@ using MongoDB.Driver;
 
 namespace WeatherForecast.Services
 {
-    public class DbService
+    public class MongoDbService : IDbService
     {
         private readonly IMongoCollection<User> _collection;
 
-        public DbService()
+        public MongoDbService()
         {
             var urlBuilder = new MongoUrlBuilder("mongodb://localhost:27017/WeatherForecast");
             urlBuilder.RetryWrites = false;

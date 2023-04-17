@@ -1,25 +1,20 @@
-﻿using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+﻿using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Serialization;
-using WeatherForecast.Models;
 
 namespace WeatherForecast.Services
 {
-    public class CEPService
+    public class InpeCepService : ICepService
     {
-        private readonly HttpClient _httpClient;
-        private readonly ElasticService _elasticService;
         private readonly SerializeService _serializeService;
+        private readonly HttpClient _httpClient;
+        private readonly ILogService _logger;
 
-        public CEPService(HttpClient httpClient, ElasticService elasticService, SerializeService serializeService)
+        public InpeCepService(HttpClient httpClient, ILogService logService, SerializeService serializeService)
         {
-            _httpClient = httpClient;
-            _elasticService = elasticService;
             _serializeService = serializeService;
+            _httpClient = httpClient;
+            _logger = logService;
         }
 
         public bool IsValidCep(string cep)
@@ -41,7 +36,7 @@ namespace WeatherForecast.Services
             var result = _httpClient.GetAsync(route).Result;
 
             var citiesInfos = result.Content.ReadAsStringAsync().Result;
-            _elasticService.WriteLog(citiesInfos);
+            _logger.WriteLog(citiesInfos);
 
             var deserializedCityInfos = _serializeService.DeserializeCityInfos(citiesInfos);
 

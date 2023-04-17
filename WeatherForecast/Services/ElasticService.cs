@@ -4,13 +4,13 @@ using Nest;
 
 namespace WeatherForecast.Services
 {
-    public class ElasticService
+    public class ElasticService : ILogService
     {
         private readonly ElasticClient _client;
         private readonly IMemoryCache _cache;
-        private readonly DbService _db;
+        private readonly IDbService _db;
 
-        public ElasticService(DbService db, IMemoryCache cache)
+        public ElasticService(IDbService db, IMemoryCache cache)
         {
             var settings = new ConnectionSettings().DefaultIndex("logs");
             _client = new ElasticClient(settings);

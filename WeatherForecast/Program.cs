@@ -1,4 +1,3 @@
-using Elastic.Apm.Api;
 using Microsoft.AspNetCore.Authentication;
 using WeatherForecast.Authentication;
 using WeatherForecast.Services;
@@ -14,11 +13,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 
+builder.Services.AddScoped<ILogService, ElasticService>();
+builder.Services.AddScoped<ICepService, InpeCepService>();
+builder.Services.AddScoped<IDbService, MongoDbService>();
 builder.Services.AddScoped<SerializeService>();
-builder.Services.AddScoped<ElasticService>();
 builder.Services.AddScoped<HashService>();
-builder.Services.AddScoped<CEPService>();
-builder.Services.AddScoped<DbService>();
 
 builder.Services.AddAuthentication("BasicAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthentication>("BasicAuthentication", null);

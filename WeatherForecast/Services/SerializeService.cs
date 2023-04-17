@@ -1,9 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Net.Http;
-using System.Xml;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 using WeatherForecast.Models;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Xml;
 
 namespace WeatherForecast.Services
 {
