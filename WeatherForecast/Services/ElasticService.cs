@@ -12,7 +12,8 @@ namespace WeatherForecast.Services
 
         public ElasticService(IDbService db, IMemoryCache cache)
         {
-            var settings = new ConnectionSettings().DefaultIndex("logs");
+            var connectionString = new Uri("http://elastic:9200");
+            var settings = new ConnectionSettings(connectionString).DefaultIndex("logs");
             _client = new ElasticClient(settings);
             _cache = cache;
             _db = db;

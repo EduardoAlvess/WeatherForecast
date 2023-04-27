@@ -9,7 +9,7 @@ namespace WeatherForecast.Services
 
         public MongoDbService()
         {
-            var urlBuilder = new MongoUrlBuilder("mongodb://localhost:27017/WeatherForecast");
+            var urlBuilder = new MongoUrlBuilder("mongodb://db:27017/WeatherForecast");
             urlBuilder.RetryWrites = false;
 
             var mongoUrl = urlBuilder.ToMongoUrl();

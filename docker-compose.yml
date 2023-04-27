@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  weatherforecast:
+    image: ${DOCKER_REGISTRY-}weatherforecast
+    container_name: weather-forecast-api
+    build:
+      context: .
+      dockerfile: WeatherForecast/Dockerfile
+  
+  db:
+    image: mongo
+    container_name: db
+    ports:
+      - "27017:27017"
+    volumes:
+      - /data/db 
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.2
+    container_name: elastic
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
