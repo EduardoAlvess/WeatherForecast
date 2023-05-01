@@ -27,9 +27,16 @@ namespace WeatherForecast.Services
 
         public User GetUserByName(string name)
         {
-            var result = _collection.Find(x => x.Name == name).First();
+            try
+            {
+                var result = _collection.Find(x => x.Name == name).First();
 
-            return result;
+                return result;
+            }
+            catch(Exception e)
+            {
+                return null;
+            }
         }
     }
 }

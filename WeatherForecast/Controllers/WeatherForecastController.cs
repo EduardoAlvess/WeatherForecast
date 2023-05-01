@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WeatherForecast.Services;
+using WeatherForecast.Models;
 using Newtonsoft.Json.Linq;
 
 namespace WeatherForecast.Controllers
@@ -24,32 +25,41 @@ namespace WeatherForecast.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("/GetWeatherForecast/{cep}")]
-        public string GetWeatherForecast(string cep)
+        [Route("/GetWeatherForecast")]
+        public string GetWeatherForecast([FromBody]WeatherRequest request)
         {
-            if (!_CepService.IsValidCep(cep))
-                return String.Empty;
+            try
+            {
+                var cep = request.cep;
 
-            var locationInfosResult = _httpClient.GetAsync($"https://viacep.com.br/ws/{cep}/json/").Result;
-            var locationInfosJsonString = locationInfosResult.Content.ReadAsStringAsync().Result;
-            _logger.WriteLog(locationInfosJsonString);
+                if (!_CepService.IsValidCep(cep))
+                    return String.Empty;
 
-            JObject locationInfosJson = JObject.Parse(locationInfosJsonString);
-            var cityName = (string)locationInfosJson["localidade"];
+                var locationInfosResult = _httpClient.GetAsync($"https://viacep.com.br/ws/{cep}/json/").Result;
+                var locationInfosJsonString = locationInfosResult.Content.ReadAsStringAsync().Result;
+                _logger.WriteLog(locationInfosJsonString);
 
-            if (cityName == null)
-                return String.Empty;
+                JObject locationInfosJson = JObject.Parse(locationInfosJsonString);
+                var cityName = (string)locationInfosJson["localidade"];
 
-            var cityId = _CepService.SearchCityId(cityName);
-            var weatherForecastResult = _httpClient.GetAsync($"http://servicos.cptec.inpe.br/XML/cidade/{cityId}/previsao.xml").Result;
-            var weatherForecastXml = weatherForecastResult.Content.ReadAsStringAsync().Result;
-            _logger.WriteLog(weatherForecastXml);
+                if (cityName == null)
+                    return String.Empty;
 
-            string weatherForecastJson = _serializeService.ConvertXmlToJson(weatherForecastXml);
+                var cityId = _CepService.SearchCityId(cityName);
+                var weatherForecastResult = _httpClient.GetAsync($"http://servicos.cptec.inpe.br/XML/cidade/{cityId}/previsao.xml").Result;
+                var weatherForecastXml = weatherForecastResult.Content.ReadAsStringAsync().Result;
+                _logger.WriteLog(weatherForecastXml);
 
-            string resultJson = _serializeService.MergeJson(locationInfosJsonString, weatherForecastJson);
+                string weatherForecastJson = _serializeService.ConvertXmlToJson(weatherForecastXml);
 
-            return resultJson;
+                string resultJson = _serializeService.MergeJson(locationInfosJsonString, weatherForecastJson);
+
+                return resultJson;
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
 
     }

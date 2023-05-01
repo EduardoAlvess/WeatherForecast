@@ -29,18 +29,25 @@ namespace WeatherForecast.Services
 
         public int SearchCityId(string cityName)
         {
-            var normalizedName = NormalizeCityName(cityName);
+            try
+            {
+                var normalizedName = NormalizeCityName(cityName);
 
-            var route = $"http://servicos.cptec.inpe.br/XML/listaCidades?city={normalizedName}";
+                var route = $"http://servicos.cptec.inpe.br/XML/listaCidades?city={normalizedName}";
 
-            var result = _httpClient.GetAsync(route).Result;
+                var result = _httpClient.GetAsync(route).Result;
 
-            var citiesInfos = result.Content.ReadAsStringAsync().Result;
-            _logger.WriteLog(citiesInfos);
+                var citiesInfos = result.Content.ReadAsStringAsync().Result;
+                _logger.WriteLog(citiesInfos);
 
-            var deserializedCityInfos = _serializeService.DeserializeCityInfos(citiesInfos);
+                var deserializedCityInfos = _serializeService.DeserializeCityInfos(citiesInfos);
 
-            return deserializedCityInfos.City.ID;
+                return deserializedCityInfos.City.ID;
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
 
         private string NormalizeCityName(string cityName)

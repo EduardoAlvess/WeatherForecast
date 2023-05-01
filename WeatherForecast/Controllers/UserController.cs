@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using WeatherForecast.Services;
 using WeatherForecast.Models;
+using WeatherForecast.Exceptions;
+using System.Net;
 
 namespace WeatherForecast.Controllers
 {
@@ -22,18 +24,24 @@ namespace WeatherForecast.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        [Route("Create/{username}/{password}")]
-        public void Create(string username, string password)
+        [Route("Create")]
+        public void Create([FromBody]User user)
         {
-            var hashedPassword = _hashService.HashPassword(password);
-
-            var user = new User
+            try
             {
-                Name = username,
-                Password = hashedPassword
-            };
+                if (_db.GetUserByName(user.Name) is not null)
+                    throw new UserAlreadyExistException();
 
-            _db.CreateUser(user);
+                var hashedPassword = _hashService.HashPassword(user.Password);
+
+                user.Password = hashedPassword;
+
+                _db.CreateUser(user);
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
 
 
